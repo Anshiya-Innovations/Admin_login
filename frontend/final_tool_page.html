@@ -1,0 +1,805 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee Access Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+/* ===== RESET ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #dce6f5;
+  --white:       #ffffff;
+  --shadow:      0 4px 12px rgba(0,0,0,0.08);
+  --radius:      15px;
+  --blue:        #4a6fdc;
+  --blue-dark:   #465d9c;
+  --blue-light:  #eef2ff;
+  --text:        #111827;
+  --muted:       #6b7280;
+  --red:         #e53e3e;
+  --red-border:  #fca5a5;
+  --red-bg:      #fff5f5;
+  --red-btn:     #f44336;
+  --green:       #4cd964;
+  --font: 'Poppins', system-ui, sans-serif;
+}
+
+html, body {
+  min-height: 100vh;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  width: 95%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 28px 0 52px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* HEADER */
+.header-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+  gap: 16px;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.header-icon { width: 58px; height: 58px; flex-shrink: 0; }
+.header-title { font-size: 1.3rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+.header-subtitle { font-size: 0.875rem; font-weight: 400; color: var(--muted); margin-top: 3px; }
+
+.btn-logout {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 20px; background: var(--white);
+  border: 1.8px solid var(--blue); border-radius: 8px;
+  color: var(--blue); font-family: var(--font); font-size: 0.9rem;
+  font-weight: 600; cursor: pointer; transition: background 0.15s; white-space: nowrap;
+}
+.btn-logout:hover { background: var(--blue-light); }
+
+/* SECTION */
+.section-card { padding: 24px 28px 28px; }
+.section-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+}
+.section-title-group { display: flex; align-items: center; gap: 12px; }
+.section-icon-box {
+  display: flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px; background: #f0f2f5;
+  border-radius: 8px; flex-shrink: 0;
+}
+.section-heading { font-size: 1.15rem; font-weight: 700; color: var(--text); }
+
+.btn-add {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 12px 26px; background: var(--blue-dark);
+  color: var(--white); border: none; border-radius: 10px;
+  font-family: var(--font); font-size: 1rem; font-weight: 600;
+  cursor: pointer; box-shadow: 0 3px 10px rgba(70,93,156,0.35);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.btn-add:hover { background: #3a4f8a; box-shadow: 0 5px 16px rgba(70,93,156,0.45); transform: translateY(-1px); }
+.btn-add:active { transform: translateY(0); }
+
+/* TABLE */
+.tbl-wrap { background: var(--bg); border-radius: 12px; padding: 2px; overflow: hidden; }
+.tbl { width: 100%; border-collapse: collapse; background: var(--white); }
+.tbl-head-row { background: var(--white); border-bottom: 2px solid #e8ecf4; }
+.tbl-th { padding: 20px 28px; font-size: 1.1rem; font-weight: 700; color: var(--text); text-align: left; white-space: nowrap; }
+.th-pw  { text-align: center; }
+.th-act { text-align: center; }
+.tbl-row { border-bottom: 1px solid #e8ecf4; transition: background 0.12s; }
+.tbl-row:last-child { border-bottom: none; }
+.tbl-row:hover { background: #f8f9fe; }
+.tbl-td { padding: 20px 28px; font-size: 1.1rem; font-weight: 500; color: var(--text); vertical-align: middle; }
+.td-pw { text-align: center; font-size: 1.2rem; letter-spacing: 2px; color: #374151; }
+.td-act { text-align: center; }
+
+.btn-delete {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; background: var(--white);
+  border: 1.5px solid var(--red-border); border-radius: 8px;
+  color: var(--red); font-family: var(--font); font-size: 0.95rem;
+  font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.btn-delete:hover { background: var(--red-bg); border-color: #f87171; }
+
+/* REQUEST SECTION */
+.req-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+.req-icon-box {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; background: var(--blue-light);
+  border-radius: 10px; flex-shrink: 0;
+}
+.req-subtitle { font-size: 0.8rem; font-weight: 400; color: var(--muted); margin-top: 3px; }
+
+.req-tbl .tbl-th { font-size: 1rem; padding: 16px 24px; }
+.req-tbl .tbl-td { font-size: 1rem; padding: 16px 24px; }
+.req-tbl .td-pw { font-size: 1.05rem; }
+.req-id { font-size: 1.05rem; font-weight: 600; }
+
+.td-req-btns { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+.btn-approved {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 22px; background: var(--green); color: var(--white);
+  border: none; border-radius: 8px; font-family: var(--font);
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em;
+  cursor: pointer; transition: background 0.15s, transform 0.1s; white-space: nowrap;
+}
+.btn-approved:hover { background: #34c74d; transform: translateY(-1px); }
+
+.btn-declined {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 10px 22px; background: var(--red-btn); color: var(--white);
+  border: none; border-radius: 8px; font-family: var(--font);
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.05em;
+  cursor: pointer; transition: background 0.15s, transform 0.1s; white-space: nowrap;
+}
+.btn-declined:hover { background: #d32f2f; transform: translateY(-1px); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: none; align-items: center; justify-content: center;
+  z-index: 999; padding: 16px; backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--white); border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  width: 100%; max-width: 460px;
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(-14px) scale(0.97); }
+  to   { opacity: 1; transform: none; }
+}
+.modal-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 16px; border-bottom: 1px solid #e5e7eb;
+}
+.modal-title { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.modal-close {
+  background: none; border: none; font-size: 1.6rem; line-height: 1;
+  color: #9ca3af; cursor: pointer; padding: 0 4px; border-radius: 4px;
+  transition: color 0.15s, background 0.15s; font-family: var(--font);
+}
+.modal-close:hover { color: var(--text); background: #f3f4f6; }
+.modal-bd { padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; }
+.form-grp { display: flex; flex-direction: column; gap: 5px; }
+.form-lbl { font-size: 0.875rem; font-weight: 600; color: var(--text); }
+.form-inp {
+  padding: 11px 14px; border: 1.5px solid #d1d5db; border-radius: 8px;
+  font-family: var(--font); font-size: 0.9rem; color: var(--text);
+  outline: none; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-inp:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(74,111,220,0.12); }
+.form-inp.has-err { border-color: var(--red); }
+.form-err { font-size: 0.78rem; color: var(--red); min-height: 1em; }
+
+/* Password input wrapper for eye toggle */
+.pw-wrap { position: relative; }
+.pw-wrap .form-inp { width: 100%; padding-right: 42px; }
+.pw-toggle {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--muted);
+  display: flex; align-items: center; padding: 0;
+  transition: color 0.15s;
+}
+.pw-toggle:hover { color: var(--text); }
+
+/* Password strength hints */
+.pw-hints { display: flex; flex-direction: column; gap: 4px; margin-top: 6px; }
+.pw-hint {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.75rem; color: var(--muted); transition: color 0.2s;
+}
+.pw-hint.ok { color: #16a34a; }
+.pw-hint .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #d1d5db; flex-shrink: 0; transition: background 0.2s;
+}
+.pw-hint.ok .dot { background: #16a34a; }
+
+.modal-ft {
+  padding: 14px 24px 20px; display: flex; gap: 10px;
+  justify-content: flex-end; border-top: 1px solid #e5e7eb;
+}
+.btn-modal-cancel {
+  padding: 10px 22px; background: #f3f4f6; border: 1px solid #d1d5db;
+  border-radius: 8px; font-family: var(--font); font-size: 0.9rem;
+  font-weight: 600; color: #374151; cursor: pointer; transition: background 0.15s;
+}
+.btn-modal-cancel:hover { background: #e5e7eb; }
+.btn-modal-save {
+  padding: 10px 26px; background: var(--blue-dark); color: var(--white);
+  border: none; border-radius: 8px; font-family: var(--font);
+  font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background 0.15s;
+}
+.btn-modal-save:hover { background: #3a4f8a; }
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .page { width: 96%; padding: 16px 0 36px; gap: 16px; }
+  .header-card { padding: 16px 18px; }
+  .section-card { padding: 18px 16px 22px; }
+  .header-title { font-size: 1.05rem; }
+  .header-icon { width: 42px; height: 42px; }
+  .btn-add { padding: 10px 18px; font-size: 0.875rem; }
+  .tbl-th { padding: 16px 14px; font-size: 0.95rem; }
+  .tbl-td { padding: 16px 14px; font-size: 0.95rem; }
+  .req-tbl .tbl-th, .req-tbl .tbl-td { padding: 12px 10px; }
+}
+@media (max-width: 540px) {
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tbl { min-width: 480px; }
+  .req-tbl { min-width: 440px; }
+  .btn-approved, .btn-declined { padding: 8px 14px; font-size: 0.78rem; }
+}
+    </style>
+  </head>
+  <body>
+    <div class="page">
+
+      <!-- HEADER -->
+      <header class="card header-card">
+        <div class="header-left">
+          <svg class="header-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#4a6fdc" aria-hidden="true">
+            <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
+          </svg>
+          <div class="header-text">
+            <h1 class="header-title">Employee Access Management</h1>
+            <p class="header-subtitle">Welcome back, Siva Ram (Team Lead)</p>
+          </div>
+        </div>
+        <button class="btn-logout" id="logout-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#4a6fdc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+          Log Out
+        </button>
+      </header>
+
+      <!-- EMPLOYEE LIST -->
+      <section class="card section-card">
+        <div class="section-top">
+          <div class="section-title-group">
+            <div class="section-icon-box">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <circle cx="8" cy="12" r="2"/>
+                <path d="M14 9h4M14 12h4M14 15h2"/>
+              </svg>
+            </div>
+            <h2 class="section-heading">Employee List</h2>
+          </div>
+          <button class="btn-add" id="add-employee-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Add Employee
+          </button>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl" id="employee-table">
+            <thead>
+              <tr class="tbl-head-row">
+                <th class="tbl-th th-id">Employee ID</th>
+                <th class="tbl-th th-name">EMP Name</th>
+                <th class="tbl-th th-pw">Password</th>
+                <th class="tbl-th th-act">Action</th>
+              </tr>
+            </thead>
+            <tbody id="employee-tbody">
+              <tr class="tbl-row">
+                <td class="tbl-td td-id">EMP001</td>
+                <td class="tbl-td td-name">Karthi</td>
+                <td class="tbl-td td-pw">**********</td>
+                <td class="tbl-td td-act">
+                  <button class="btn-delete" onclick="deleteEmployee(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr class="tbl-row">
+                <td class="tbl-td td-id">EMP002</td>
+                <td class="tbl-td td-name">Bharath</td>
+                <td class="tbl-td td-pw">**********</td>
+                <td class="tbl-td td-act">
+                  <button class="btn-delete" onclick="deleteEmployee(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+              <tr class="tbl-row">
+                <td class="tbl-td td-id">EMP003</td>
+                <td class="tbl-td td-name">Baalan</td>
+                <td class="tbl-td td-pw">**********</td>
+                <td class="tbl-td td-act">
+                  <button class="btn-delete" onclick="deleteEmployee(this)">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <polyline points="3 6 5 6 21 6"/>
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                      <path d="M10 11v6M14 11v6"/>
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                    </svg>
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- REQUEST ACCESS -->
+      <section class="card section-card">
+        <div class="req-header">
+          <div class="req-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4a6fdc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <div>
+            <h2 class="section-heading">Request Access</h2>
+            <p class="req-subtitle">Request new access for tools and systems</p>
+          </div>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl req-tbl" id="request-table">
+            <thead>
+              <tr class="tbl-head-row">
+                <th class="tbl-th th-id">Employee ID</th>
+                <th class="tbl-th th-name">EMP Name</th>
+                <th class="tbl-th th-pw">Password</th>
+                <th class="tbl-th th-act">Requests</th>
+              </tr>
+            </thead>
+            <tbody id="request-tbody">
+              <tr class="tbl-row">
+                <td class="tbl-td td-id req-id">EMP006</td>
+                <td class="tbl-td td-name">Milton</td>
+                <td class="tbl-td td-pw">**********</td>
+                <td class="tbl-td td-act td-req-btns">
+                  <button class="btn-approved" onclick="handleApproved(this)">APPROVE</button>
+                  <button class="btn-declined" onclick="handleDeclined(this)">DECLINE</button>
+                </td>
+              </tr>
+              <tr class="tbl-row">
+                <td class="tbl-td td-id req-id">EMP004</td>
+                <td class="tbl-td td-name">Sivaram</td>
+                <td class="tbl-td td-pw">**********</td>
+                <td class="tbl-td td-act td-req-btns">
+                  <button class="btn-approved" onclick="handleApproved(this)">APPROVE</button>
+                  <button class="btn-declined" onclick="handleDeclined(this)">DECLINE</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ADD EMPLOYEE MODAL -->
+    <div class="modal-overlay" id="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal">
+        <div class="modal-hd">
+          <h3 class="modal-title" id="modal-title">Add Employee</h3>
+          <button class="modal-close" id="modal-close" aria-label="Close">&times;</button>
+        </div>
+        <div class="modal-bd">
+          <!-- Name -->
+          <div class="form-grp">
+            <label class="form-lbl" for="emp-name-input">Name</label>
+            <input class="form-inp" type="text" id="emp-name-input" placeholder="e.g. John Doe" />
+            <span class="form-err" id="emp-name-error"></span>
+          </div>
+          <!-- Employee ID -->
+          <div class="form-grp">
+            <label class="form-lbl" for="emp-id-input">Employee ID</label>
+            <input class="form-inp" type="text" id="emp-id-input" placeholder="e.g. EMP007" />
+            <span class="form-err" id="emp-id-error"></span>
+          </div>
+          <!-- Password -->
+          <div class="form-grp">
+            <label class="form-lbl" for="emp-pw-input">Password</label>
+            <div class="pw-wrap">
+              <input class="form-inp" type="password" id="emp-pw-input" placeholder="Enter password" autocomplete="new-password" />
+              <button type="button" class="pw-toggle" id="pw-toggle" aria-label="Toggle password visibility">
+                <!-- Eye icon -->
+                <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+              </button>
+            </div>
+            <span class="form-err" id="emp-pw-error"></span>
+            <!-- Password strength hints -->
+            <div class="pw-hints" id="pw-hints">
+              <div class="pw-hint" id="hint-len"><span class="dot"></span>At least 8 characters</div>
+              <div class="pw-hint" id="hint-upper"><span class="dot"></span>One uppercase letter (A–Z)</div>
+              <div class="pw-hint" id="hint-lower"><span class="dot"></span>One lowercase letter (a–z)</div>
+              <div class="pw-hint" id="hint-num"><span class="dot"></span>One number (0–9)</div>
+              <div class="pw-hint" id="hint-sym"><span class="dot"></span>One symbol (!@#$%^&* …)</div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-ft">
+          <button class="btn-modal-cancel" id="modal-cancel">Cancel</button>
+          <button class="btn-modal-save" id="modal-save">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+/* === helpers === */
+function trashSvg() {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <polyline points="3 6 5 6 21 6"/>
+    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+    <path d="M10 11v6M14 11v6"/>
+    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+  </svg>`;
+}
+
+function escapeHtml(str) {
+  if (typeof str !== 'string') return str;
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildEmployeeRow(empId, empName) {
+  const tr = document.createElement('tr');
+  tr.className = 'tbl-row';
+  tr.innerHTML = `
+    <td class="tbl-td td-id">${escapeHtml(empId)}</td>
+    <td class="tbl-td td-name">${escapeHtml(empName)}</td>
+    <td class="tbl-td td-pw">**********</td>
+    <td class="tbl-td td-act">
+      <button class="btn-delete" onclick="deleteEmployee(this)">
+        ${trashSvg()} Delete
+      </button>
+    </td>
+  `;
+  return tr;
+}
+
+function buildRequestRow(empId, empName) {
+  const tr = document.createElement('tr');
+  tr.className = 'tbl-row';
+  tr.innerHTML = `
+    <td class="tbl-td td-id req-id">${escapeHtml(empId)}</td>
+    <td class="tbl-td td-name">${escapeHtml(empName)}</td>
+    <td class="tbl-td td-pw">**********</td>
+    <td class="tbl-td td-act td-req-btns">
+      <button class="btn-approved" onclick="handleApproved(this)">APPROVE</button>
+      <button class="btn-declined" onclick="handleDeclined(this)">DECLINE</button>
+    </td>
+  `;
+  return tr;
+}
+
+function fadeRemove(row, callback) {
+  row.style.transition = 'opacity 0.22s ease';
+  row.style.opacity = '0';
+  setTimeout(() => { row.remove(); if (callback) callback(); }, 230);
+}
+
+// Check if response is 401 (expired session) and redirect
+function checkAuthError(res) {
+  if (res.status === 401) {
+    alert('Session expired. Redirecting to login.');
+    window.location.href = 'index.html';
+    return true;
+  }
+  return false;
+}
+
+/* === Load Data === */
+function loadDashboardData() {
+  // Fetch employees
+  fetch('/api/admin/employees')
+    .then(res => {
+      if (checkAuthError(res)) return;
+      return res.json();
+    })
+    .then(employees => {
+      if (!employees) return;
+      const tbody = document.getElementById('employee-tbody');
+      tbody.innerHTML = '';
+      employees.forEach(emp => {
+        tbody.appendChild(buildEmployeeRow(emp.employee_id, emp.full_name));
+      });
+    })
+    .catch(err => console.error('Error fetching employees:', err));
+
+  // Fetch pending requests
+  fetch('/api/admin/requests')
+    .then(res => {
+      if (checkAuthError(res)) return;
+      return res.json();
+    })
+    .then(requests => {
+      if (!requests) return;
+      const tbody = document.getElementById('request-tbody');
+      tbody.innerHTML = '';
+      requests.forEach(req => {
+        tbody.appendChild(buildRequestRow(req.employee_id, req.full_name));
+      });
+    })
+    .catch(err => console.error('Error fetching requests:', err));
+}
+
+// Load data on start
+loadDashboardData();
+
+// Periodically check session and refresh data
+const refreshInterval = setInterval(loadDashboardData, 5000);
+
+/* === Actions === */
+function deleteEmployee(btn) {
+  const row = btn.closest('tr');
+  if (!row) return;
+  const empId = row.cells[0].textContent.trim();
+
+  if (confirm('Are you sure you want to delete employee ' + empId + '?')) {
+    fetch('/api/admin/employees/' + encodeURIComponent(empId), {
+      method: 'DELETE'
+    })
+    .then(res => {
+      if (checkAuthError(res)) return;
+      return res.json().then(data => {
+        if (!res.ok) throw new Error(data.error || 'Failed to delete employee.');
+        return data;
+      });
+    })
+    .then(data => {
+      fadeRemove(row);
+    })
+    .catch(err => alert(err.message));
+  }
+}
+
+function handleApproved(btn) {
+  const row = btn.closest('tr');
+  if (!row) return;
+  const empId   = row.cells[0].textContent.trim();
+  const empName = row.cells[1].textContent.trim();
+
+  fetch('/api/admin/requests/' + encodeURIComponent(empId) + '/approve', {
+    method: 'POST'
+  })
+  .then(res => {
+    if (checkAuthError(res)) return;
+    return res.json().then(data => {
+      if (!res.ok) throw new Error(data.error || 'Failed to approve request.');
+      return data;
+    });
+  })
+  .then(data => {
+    const tbody   = document.getElementById('employee-tbody');
+    const newRow  = buildEmployeeRow(empId, empName);
+    newRow.style.opacity = '0';
+    tbody.appendChild(newRow);
+    fadeRemove(row, () => {
+      requestAnimationFrame(() => {
+        newRow.style.transition = 'opacity 0.25s ease';
+        newRow.style.opacity = '1';
+      });
+    });
+  })
+  .catch(err => alert(err.message));
+}
+
+function handleDeclined(btn) {
+  const row = btn.closest('tr');
+  if (!row) return;
+  const empId = row.cells[0].textContent.trim();
+
+  fetch('/api/admin/requests/' + encodeURIComponent(empId) + '/decline', {
+    method: 'POST'
+  })
+  .then(res => {
+    if (checkAuthError(res)) return;
+    return res.json().then(data => {
+      if (!res.ok) throw new Error(data.error || 'Failed to decline request.');
+      return data;
+    });
+  })
+  .then(data => {
+    fadeRemove(row);
+  })
+  .catch(err => alert(err.message));
+}
+
+window.deleteEmployee  = deleteEmployee;
+window.handleApproved  = handleApproved;
+window.handleDeclined  = handleDeclined;
+
+/* === Add Employee Modal === */
+(function () {
+  const overlay      = document.getElementById('modal-overlay');
+  const addBtn       = document.getElementById('add-employee-btn');
+  const closeBtn     = document.getElementById('modal-close');
+  const cancelBtn    = document.getElementById('modal-cancel');
+  const saveBtn      = document.getElementById('modal-save');
+  const empNameInput = document.getElementById('emp-name-input');
+  const empIdInput   = document.getElementById('emp-id-input');
+  const empPwInput   = document.getElementById('emp-pw-input');
+  const empNameErr   = document.getElementById('emp-name-error');
+  const empIdErr     = document.getElementById('emp-id-error');
+  const empPwErr     = document.getElementById('emp-pw-error');
+  const tbody        = document.getElementById('employee-tbody');
+  const pwToggle     = document.getElementById('pw-toggle');
+
+  const rules = {
+    'hint-len':   pw => pw.length >= 8,
+    'hint-upper': pw => /[A-Z]/.test(pw),
+    'hint-lower': pw => /[a-z]/.test(pw),
+    'hint-num':   pw => /[0-9]/.test(pw),
+    'hint-sym':   pw => /[^A-Za-z0-9]/.test(pw),
+  };
+
+  empPwInput.addEventListener('input', () => {
+    const pw = empPwInput.value;
+    for (const [id, test] of Object.entries(rules)) {
+      document.getElementById(id).classList.toggle('ok', test(pw));
+    }
+  });
+
+  pwToggle.addEventListener('click', () => {
+    const isText = empPwInput.type === 'text';
+    empPwInput.type = isText ? 'password' : 'text';
+    document.getElementById('eye-icon').innerHTML = isText
+      ? `<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>`
+      : `<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20C5 20 1 12 1 12a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>`;
+  });
+
+  function openModal() {
+    empNameInput.value = '';
+    empIdInput.value   = '';
+    empPwInput.value   = '';
+    empPwInput.type    = 'password';
+    clearErrors();
+    for (const id of Object.keys(rules)) {
+      document.getElementById(id).classList.remove('ok');
+    }
+    overlay.classList.add('open');
+    setTimeout(() => empNameInput.focus(), 50);
+  }
+
+  function closeModal() { overlay.classList.remove('open'); }
+
+  function clearErrors() {
+    [empNameErr, empIdErr, empPwErr].forEach(el => el.textContent = '');
+    [empNameInput, empIdInput, empPwInput].forEach(el => el.classList.remove('has-err'));
+  }
+
+  function pwValid(pw) {
+    return pw.length >= 8 && /[A-Z]/.test(pw) && /[a-z]/.test(pw) && /[0-9]/.test(pw) && /[^A-Za-z0-9]/.test(pw);
+  }
+
+  function validate() {
+    let ok = true;
+    clearErrors();
+    if (!empNameInput.value.trim()) {
+      empNameErr.textContent = 'Name is required.';
+      empNameInput.classList.add('has-err');
+      ok = false;
+    }
+    if (!empIdInput.value.trim()) {
+      empIdErr.textContent = 'Employee ID is required.';
+      empIdInput.classList.add('has-err');
+      ok = false;
+    }
+    if (!empPwInput.value.trim()) {
+      empPwErr.textContent = 'Password is required.';
+      empPwInput.classList.add('has-err');
+      ok = false;
+    } else if (!pwValid(empPwInput.value)) {
+      empPwErr.textContent = 'Password does not meet all requirements.';
+      empPwInput.classList.add('has-err');
+      ok = false;
+    }
+    return ok;
+  }
+
+  addBtn.addEventListener('click', openModal);
+  closeBtn.addEventListener('click', closeModal);
+  cancelBtn.addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  saveBtn.addEventListener('click', () => {
+    if (!validate()) return;
+    const name = empNameInput.value.trim();
+    const empid = empIdInput.value.trim();
+    const password = empPwInput.value;
+
+    fetch('/api/admin/employees', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ name: name, empid: empid, password: password })
+    })
+    .then(res => {
+      if (checkAuthError(res)) return;
+      return res.json().then(data => {
+        if (!res.ok) throw new Error(data.error || 'Failed to add employee.');
+        return data;
+      });
+    })
+    .then(data => {
+      const newRow = buildEmployeeRow(empid, name);
+      newRow.style.opacity = '0';
+      tbody.appendChild(newRow);
+      closeModal();
+      requestAnimationFrame(() => {
+        newRow.style.transition = 'opacity 0.25s ease';
+        newRow.style.opacity = '1';
+      });
+    })
+    .catch(err => {
+      // Display first error
+      empPwErr.textContent = err.message;
+    });
+  });
+})();
+
+/* === Logout === */
+document.getElementById('logout-btn').addEventListener('click', () => {
+  if (confirm('Are you sure you want to log out?')) {
+    clearInterval(refreshInterval);
+    fetch('/api/admin/logout', { method: 'POST' })
+    .then(() => {
+      window.location.href = 'index.html';
+    })
+    .catch(() => {
+      window.location.href = 'index.html';
+    });
+  }
+});
+    </script>
+  </body>
+</html>
