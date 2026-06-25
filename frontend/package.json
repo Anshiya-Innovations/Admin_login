@@ -1,0 +1,8 @@
+{
+  "name": "admin-portal-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Access Management Admin Portal",
+  "scripts": {
+    "start": "npx serve -l 5000"
+  }
+}

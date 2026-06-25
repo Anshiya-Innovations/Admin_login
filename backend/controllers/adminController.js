@@ -24,14 +24,14 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { empid: admin.employee_id, role: 'admin' },
       process.env.JWT_SECRET,
-      { expiresIn: '60s' }
+      { expiresIn: '30d' }
     );
 
     res.cookie('admin_token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60000 // 60s
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     });
 
     return res.status(200).json({
@@ -72,10 +72,13 @@ const getEmployees = async (req, res) => {
 const approveRequest = async (req, res) => {
   const { empid } = req.params;
 
-  const connectionPortal = await poolPortal.getConnection();
-  const connectionAccess = await poolAccess.getConnection();
+  let connectionPortal;
+  let connectionAccess;
 
   try {
+    connectionPortal = await poolPortal.getConnection();
+    connectionAccess = await poolAccess.getConnection();
+
     const [requests] = await connectionPortal.query(
       'SELECT * FROM registration_requests WHERE employee_id = ? AND request_status = "Pending"',
       [empid]
@@ -127,13 +130,17 @@ const approveRequest = async (req, res) => {
 
     return res.status(200).json({ message: 'Request approved successfully.' });
   } catch (err) {
-    await connectionPortal.rollback();
-    await connectionAccess.rollback();
+    try {
+      if (connectionPortal) await connectionPortal.rollback();
+    } catch (rerr) {}
+    try {
+      if (connectionAccess) await connectionAccess.rollback();
+    } catch (rerr) {}
     console.error('Approve request error:', err);
     return res.status(500).json({ error: 'Failed to approve request.' });
   } finally {
-    connectionPortal.release();
-    connectionAccess.release();
+    if (connectionPortal) connectionPortal.release();
+    if (connectionAccess) connectionAccess.release();
   }
 };
 
@@ -141,10 +148,13 @@ const approveRequest = async (req, res) => {
 const declineRequest = async (req, res) => {
   const { empid } = req.params;
 
-  const connectionPortal = await poolPortal.getConnection();
-  const connectionAccess = await poolAccess.getConnection();
+  let connectionPortal;
+  let connectionAccess;
 
   try {
+    connectionPortal = await poolPortal.getConnection();
+    connectionAccess = await poolAccess.getConnection();
+
     const [requests] = await connectionAccess.query(
       'SELECT * FROM access_requests WHERE employee_id = ? AND request_status = "Pending"',
       [empid]
@@ -172,13 +182,17 @@ const declineRequest = async (req, res) => {
 
     return res.status(200).json({ message: 'Request declined successfully.' });
   } catch (err) {
-    await connectionPortal.rollback();
-    await connectionAccess.rollback();
+    try {
+      if (connectionPortal) await connectionPortal.rollback();
+    } catch (rerr) {}
+    try {
+      if (connectionAccess) await connectionAccess.rollback();
+    } catch (rerr) {}
     console.error('Decline request error:', err);
     return res.status(500).json({ error: 'Failed to decline request.' });
   } finally {
-    connectionPortal.release();
-    connectionAccess.release();
+    if (connectionPortal) connectionPortal.release();
+    if (connectionAccess) connectionAccess.release();
   }
 };
 
@@ -187,10 +201,13 @@ const addEmployee = async (req, res) => {
   const { name, empid, password } = req.body;
   const email = `${empid.toLowerCase()}@company.com`;
 
-  const connectionPortal = await poolPortal.getConnection();
-  const connectionAccess = await poolAccess.getConnection();
+  let connectionPortal;
+  let connectionAccess;
 
   try {
+    connectionPortal = await poolPortal.getConnection();
+    connectionAccess = await poolAccess.getConnection();
+
     const [exist] = await connectionAccess.query(
       'SELECT employee_id FROM employee_list WHERE employee_id = ?',
       [empid]
@@ -222,13 +239,17 @@ const addEmployee = async (req, res) => {
 
     return res.status(201).json({ message: 'Employee added successfully.' });
   } catch (err) {
-    await connectionPortal.rollback();
-    await connectionAccess.rollback();
+    try {
+      if (connectionPortal) await connectionPortal.rollback();
+    } catch (rerr) {}
+    try {
+      if (connectionAccess) await connectionAccess.rollback();
+    } catch (rerr) {}
     console.error('Add employee manually error:', err);
     return res.status(500).json({ error: 'Failed to add employee manually.' });
   } finally {
-    connectionPortal.release();
-    connectionAccess.release();
+    if (connectionPortal) connectionPortal.release();
+    if (connectionAccess) connectionAccess.release();
   }
 };
 
@@ -236,10 +257,13 @@ const addEmployee = async (req, res) => {
 const deleteEmployee = async (req, res) => {
   const { empid } = req.params;
 
-  const connectionPortal = await poolPortal.getConnection();
-  const connectionAccess = await poolAccess.getConnection();
+  let connectionPortal;
+  let connectionAccess;
 
   try {
+    connectionPortal = await poolPortal.getConnection();
+    connectionAccess = await poolAccess.getConnection();
+
     const [exist] = await connectionAccess.query(
       'SELECT employee_id FROM employee_list WHERE employee_id = ?',
       [empid]
@@ -262,13 +286,17 @@ const deleteEmployee = async (req, res) => {
 
     return res.status(200).json({ message: 'Employee deleted and accounts de-provisioned successfully.' });
   } catch (err) {
-    await connectionPortal.rollback();
-    await connectionAccess.rollback();
+    try {
+      if (connectionPortal) await connectionPortal.rollback();
+    } catch (rerr) {}
+    try {
+      if (connectionAccess) await connectionAccess.rollback();
+    } catch (rerr) {}
     console.error('Delete employee error:', err);
     return res.status(500).json({ error: 'Failed to delete employee.' });
   } finally {
-    connectionPortal.release();
-    connectionAccess.release();
+    if (connectionPortal) connectionPortal.release();
+    if (connectionAccess) connectionAccess.release();
   }
 };
 

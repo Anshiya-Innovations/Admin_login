@@ -471,6 +471,10 @@ html, body {
     </div>
 
     <script>
+      const API_BASE = 'http://localhost:4000';
+      if (window.location.protocol === 'file:') {
+        alert("Error: You opened this file directly in the browser using the file:// protocol. You must run the frontend server and open the page via http://localhost:5000/final_tool_page.html.");
+      }
 /* === helpers === */
 function trashSvg() {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -536,7 +540,7 @@ function checkAuthError(res) {
 /* === Load Data === */
 function loadDashboardData() {
   // Fetch employees
-  fetch('/api/admin/employees')
+  fetch(API_BASE + '/api/admin/employees', { credentials: 'include' })
     .then(res => {
       if (checkAuthError(res)) return;
       return res.json();
@@ -552,7 +556,7 @@ function loadDashboardData() {
     .catch(err => console.error('Error fetching employees:', err));
 
   // Fetch pending requests
-  fetch('/api/admin/requests')
+  fetch(API_BASE + '/api/admin/requests', { credentials: 'include' })
     .then(res => {
       if (checkAuthError(res)) return;
       return res.json();
@@ -581,8 +585,9 @@ function deleteEmployee(btn) {
   const empId = row.cells[0].textContent.trim();
 
   if (confirm('Are you sure you want to delete employee ' + empId + '?')) {
-    fetch('/api/admin/employees/' + encodeURIComponent(empId), {
-      method: 'DELETE'
+    fetch(API_BASE + '/api/admin/employees/' + encodeURIComponent(empId), {
+      method: 'DELETE',
+      credentials: 'include'
     })
     .then(res => {
       if (checkAuthError(res)) return;
@@ -604,8 +609,9 @@ function handleApproved(btn) {
   const empId   = row.cells[0].textContent.trim();
   const empName = row.cells[1].textContent.trim();
 
-  fetch('/api/admin/requests/' + encodeURIComponent(empId) + '/approve', {
-    method: 'POST'
+  fetch(API_BASE + '/api/admin/requests/' + encodeURIComponent(empId) + '/approve', {
+    method: 'POST',
+    credentials: 'include'
   })
   .then(res => {
     if (checkAuthError(res)) return;
@@ -634,8 +640,9 @@ function handleDeclined(btn) {
   if (!row) return;
   const empId = row.cells[0].textContent.trim();
 
-  fetch('/api/admin/requests/' + encodeURIComponent(empId) + '/decline', {
-    method: 'POST'
+  fetch(API_BASE + '/api/admin/requests/' + encodeURIComponent(empId) + '/decline', {
+    method: 'POST',
+    credentials: 'include'
   })
   .then(res => {
     if (checkAuthError(res)) return;
@@ -720,21 +727,29 @@ window.handleDeclined  = handleDeclined;
   function validate() {
     let ok = true;
     clearErrors();
-    if (!empNameInput.value.trim()) {
+    const name = empNameInput.value.trim();
+    const empid = empIdInput.value.trim();
+    const pw = empPwInput.value;
+
+    if (!name) {
       empNameErr.textContent = 'Name is required.';
       empNameInput.classList.add('has-err');
       ok = false;
     }
-    if (!empIdInput.value.trim()) {
+    if (!empid) {
       empIdErr.textContent = 'Employee ID is required.';
       empIdInput.classList.add('has-err');
       ok = false;
+    } else if (!/^EMP\d{3,}$/i.test(empid)) {
+      empIdErr.textContent = 'Employee ID must be in format EMP001.';
+      empIdInput.classList.add('has-err');
+      ok = false;
     }
-    if (!empPwInput.value.trim()) {
+    if (!pw) {
       empPwErr.textContent = 'Password is required.';
       empPwInput.classList.add('has-err');
       ok = false;
-    } else if (!pwValid(empPwInput.value)) {
+    } else if (!pwValid(pw)) {
       empPwErr.textContent = 'Password does not meet all requirements.';
       empPwInput.classList.add('has-err');
       ok = false;
@@ -756,11 +771,12 @@ window.handleDeclined  = handleDeclined;
     const empid = empIdInput.value.trim();
     const password = empPwInput.value;
 
-    fetch('/api/admin/employees', {
+    fetch(API_BASE + '/api/admin/employees', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      credentials: 'include',
       body: JSON.stringify({ name: name, empid: empid, password: password })
     })
     .then(res => {
@@ -781,17 +797,25 @@ window.handleDeclined  = handleDeclined;
       });
     })
     .catch(err => {
-      // Display first error
-      empPwErr.textContent = err.message;
+      const msg = err.message;
+      if (msg.includes('Name')) {
+        empNameErr.textContent = msg;
+        empNameInput.classList.add('has-err');
+      } else if (msg.includes('Employee ID') || msg.includes('ID') || msg.includes('id') || msg.includes('empid')) {
+        empIdErr.textContent = msg;
+        empIdInput.classList.add('has-err');
+      } else {
+        empPwErr.textContent = msg;
+        empPwInput.classList.add('has-err');
+      }
     });
   });
 })();
 
-/* === Logout === */
 document.getElementById('logout-btn').addEventListener('click', () => {
   if (confirm('Are you sure you want to log out?')) {
     clearInterval(refreshInterval);
-    fetch('/api/admin/logout', { method: 'POST' })
+    fetch(API_BASE + '/api/admin/logout', { method: 'POST', credentials: 'include' })
     .then(() => {
       window.location.href = 'index.html';
     })
